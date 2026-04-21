@@ -75,8 +75,8 @@ try {
         mode: 'payment',
         success_url: `${origin}/loading`,
         cancel_url: `${origin}`,
-        metadata: {transactionId: transaction._id.toString(),appId: 'smartgpt'},
-        expires_at: Math.floor(Date.now()/1000)+30*60, //expires in 30 min
+        metadata: {transactionId: transaction._id.toString(), appId: 'smartgpt'},
+        expires_at: Math.floor(Date.now()/1000) + 30 * 60, //expires in 30 min
         });
 
          res.json({success: true, url: session.url})

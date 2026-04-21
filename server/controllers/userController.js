@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import jwt from 'jsonwebtoken'
 import Chat from "../models/Chat.js";
-import { response } from "express";
+
 
 //generate JWT
 const generateToken=(id) =>{
@@ -76,11 +76,12 @@ export const getPublishedImages = async(req, res)=>{
             {
                 $project:{
                     _id:0,
-                    imageUrl:"$username"
+                    imageUrl: "$messages.content",  
+                    userName: "$userName"      
                 }
             }
         ])
-        response.json({success: true, images: publishedImageMessages.reverse()})
+        res.json({success: true, images: publishedImageMessages.reverse()})
     } catch (error) {
         return res.json({success: false, message: error.message});
     }

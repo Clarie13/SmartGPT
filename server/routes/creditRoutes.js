@@ -1,5 +1,5 @@
-import express from 'express';
-import { getPlans, purchasePlans } from '../controllers/creditController.js';
+import express from "express";
+import { getPlans, purchasePlans } from "../controllers/creditController.js";
 import {protect} from "../middlewares/auth.js";
 
 const creditRouter = express.Router()

@@ -1,15 +1,34 @@
- import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { dummyPublishedImages } from '../assets/assets'
 import Loading from './Loading'
+import toast from 'react-hot-toast'
+import { useAppContext } from '../context/AppContext'
+import axios from '../config/axiosInstance'
 
  const Community = () =>{
 
-const[images, setImages] =useState([])
-const[loading, setLoading] =useState(true)
+const[images, setImages] = useState([])
+const[loading, setLoading] = useState(true)
+const {token} = useAppContext()
 
-const fetchImages=async()=>{
-setImages(dummyPublishedImages)
+
+const fetchImages = async () => {
+ console.log('BASE URL:', import.meta.env.VITE_SERVER_URL)
+console.log('TOKEN:', token)
+try {
+  const { data } = await axios.get('/api/user/published-images', {
+        headers: { Authorization: token }
+      })
+  if(data.success){
+    setImages(data.images)
+  }else{
+    toast.error(data.message)
+  }
+} catch (error) {
+  toast.error(error.message)
+}finally{
 setLoading(false)
+}
 }
  
 useEffect(()=> {
@@ -35,7 +54,7 @@ if(loading) return<Loading/>
             duration-300 ease-in-out' />
             <p className='absolute bottom-0 right-0 text-xs bg-black/50 
             backdrop-blur text-white px-4 py-1 rounded-tl-xl opacity-0
-            group-hover:opacity-100 transition duration-300'>Created by{item.userName}</p>
+            group-hover:opacity-100 transition duration-300'>Created by {item.userName}</p>
           </a>
         ))}
       </div>
@@ -47,4 +66,5 @@ if(loading) return<Loading/>
     </div>
   )
 }
+
  export default Community

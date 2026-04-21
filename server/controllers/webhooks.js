@@ -3,6 +3,7 @@ import Transaction from "../models/Transaction.js";
 import User from  "../models/User.js"
 
 
+
 export const stripewebhooks = async(request, response  )=>{
 
     const stripe= new Stripe(process.env.STRIPE_SECRET_KEY)
@@ -13,31 +14,38 @@ export const stripewebhooks = async(request, response  )=>{
         event= stripe.webhooks.constructEvent(request.body, sig,
              process.env.STRIPE_WEBHOOK_SECRET)
     } catch (error) {
-        return response.status(400).send(`Webhok Error:$(error.message)`)
+        return response.status(400).send(`Webhok Error:${error.message}`)
     }
 
     try {
         switch (event.type) {
-            case "payment_intent.succeeded":{
-                const paymentIntent= event.data.object;
-                const sessionList= await stripe.checkout.sessions.list({
-                    payment_intent: paymentIntent.id,
-                })
+            case "checkout.session.completed":{
 
-                const session = sessionList.data[0];
+                console.log("✅ CHECKOUT SESSION COMPLETED");
+                const session= event.data.object;
+                console.log("SESSION:", session);
+            
                 const {transactionId, appId}= session.metadata;
+                console.log("METADATA:", session.metadata);
+
                 if(appId==='smartgpt' ){
                     const transaction= await Transaction.findOne({_id: transactionId,
                         isPaid:false
                     })
+                    if (!transaction) {
+                    console.log("Transaction not found:", transactionId);
+                    return response.json({ received: true });
+                    }
+
 
                     //Update credits in user account
-                    await User .updateOne({_id: transaction.userId},{$inc:
-                        {credits: transaction.credits}})
+                    await User .updateOne({_id: transaction.userId},{$inc:{credits: transaction.credits}});
 
                     //update credit payment status
                     transaction.isPaid=true;
                     await transaction.save();
+
+                    console.log("Payment processed successfully");
                    }     
                    else{
                     return response.json({received: true, message: "Ignored event: Invalid app"})
