@@ -13,8 +13,14 @@ const app= express()
 
 await connectDB()
 //stripe webhooks
-app.post("/api/stripe", express.raw({type:"application/json"}), stripewebhooks);
-
+app.post("/api/stripe", (req, res, next) => {
+  let rawBody = Buffer.alloc(0);
+  req.on('data', chunk => { rawBody = Buffer.concat([rawBody, chunk]); });
+  req.on('end', () => {
+    req.rawBody = rawBody;
+    next();
+  });
+}, stripewebhooks);
 
 //middleware
 app.use(cors())
